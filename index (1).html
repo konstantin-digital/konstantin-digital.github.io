@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konstantin AI — нейросети на практике и проект MetaBox</title>
+  <style>
+    :root {
+      --bg: #07070d;
+      --bg-soft: #0d0d18;
+      --card: #12121f;
+      --card-hover: #171728;
+      --border: rgba(139, 92, 246, 0.18);
+      --border-soft: rgba(255, 255, 255, 0.07);
+      --text: #f5f5fa;
+      --muted: #a1a1b5;
+      --accent: #8b5cf6;
+      --accent-2: #6366f1;
+      --accent-3: #22d3ee;
+      --glow: rgba(139, 92, 246, 0.45);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 90% 0%, rgba(34, 211, 238, 0.10), transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+    /* Плавный переход фона с тёмного на светлый при прокрутке */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.10), transparent 60%),
+        radial-gradient(900px 500px at 90% 0%, rgba(34, 211, 238, 0.08), transparent 55%),
+        #f7f7fb;
+      opacity: 0;
+      transition: opacity 0.15s linear;
+    }
+    a { color: var(--accent-3); }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(7, 7, 13, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.3px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      box-shadow: 0 0 18px var(--glow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    header nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+    header nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: color 0.2s, background 0.2s;
+    }
+    header nav a:hover {
+      color: var(--text);
+      background: rgba(139, 92, 246, 0.12);
+    }
+
+    /* Layout */
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    section { padding: 4rem 0 0; }
+    .section-head { margin-bottom: 2rem; }
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent-3);
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+      font-weight: 800;
+    }
+    h1 .grad {
+      background: linear-gradient(90deg, #a78bfa, #22d3ee);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    h2 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      letter-spacing: -0.01em;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    h3 { font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 650; }
+    p { color: var(--muted); margin-bottom: 1rem; }
+    .lead { font-size: 1.1rem; max-width: 640px; }
+
+    /* Hero */
+    .hero {
+      padding: 5rem 0 1rem;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      margin-top: 1.75rem;
+    }
+    .hero-visual {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(139, 92, 246, 0.35), transparent 55%),
+        radial-gradient(circle at 75% 70%, rgba(34, 211, 238, 0.28), transparent 55%),
+        var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 0 60px rgba(139, 92, 246, 0.18), inset 0 0 60px rgba(99, 102, 241, 0.08);
+      overflow: hidden;
+    }
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 30%, transparent 75%);
+    }
+    .hero-visual .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(2px);
+    }
+    .orb-1 {
+      width: 120px; height: 120px;
+      top: 18%; left: 22%;
+      background: radial-gradient(circle at 30% 30%, #c4b5fd, #7c3aed 70%);
+      box-shadow: 0 0 50px rgba(139, 92, 246, 0.7);
+      animation: float 7s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 70px; height: 70px;
+      bottom: 22%; right: 20%;
+      background: radial-gradient(circle at 30% 30%, #a5f3fc, #0891b2 70%);
+      box-shadow: 0 0 40px rgba(34, 211, 238, 0.6);
+      animation: float 9s ease-in-out infinite reverse;
+    }
+    .orb-3 {
+      width: 40px; height: 40px;
+      top: 60%; left: 15%;
+      background: radial-gradient(circle at 30% 30%, #ddd6fe, #6366f1 70%);
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-14px) translateX(6px); }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+    }
+    .btn-secondary:hover {
+      background: rgba(139, 92, 246, 0.12);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .btn:active { transform: translateY(0); }
+
+    /* Cards */
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 1.6rem;
+      transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      background: var(--card-hover);
+      border-color: var(--border);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 24px rgba(139, 92, 246, 0.12);
+    }
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(34, 211, 238, 0.18));
+      border: 1px solid var(--border);
+      color: #c4b5fd;
+      font-size: 1.2rem;
+    }
+    .card p { margin-bottom: 0; font-size: 0.95rem; }
+
+
+
+    /* Facts, questions and transparent project introduction */
+    .insight-card { position: relative; overflow: hidden; }
+    .insight-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
+      padding: 0.28rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: #c4b5fd;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .stat-number {
+      display: block;
+      margin: 0.1rem 0 0.6rem;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      background: linear-gradient(90deg, #a78bfa, #22d3ee);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .source-link { display: inline-block; margin-top: 0.8rem; font-size: 0.82rem; }
+    .source-note { font-size: 0.82rem; margin-top: 1rem; }
+    .metabox-panel {
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.13), rgba(34, 211, 238, 0.07)), var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+    }
+    .metabox-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; }
+    .metabox-point { padding: 1rem; border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(7, 7, 13, 0.25); }
+    .metabox-point h3 { margin-bottom: 0.4rem; }
+    .metabox-point p { margin: 0; font-size: 0.92rem; }
+    .disclaimer { font-size: 0.88rem; margin: 1rem 0 0; }
+    .contact-pending { font-size: 0.92rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px dashed var(--border); display: inline-block; }
+    body.light-mode .insight-tag { color: #5b21b6; }
+    body.light-mode .metabox-point { background: rgba(255,255,255,0.75); }
+    @media (max-width: 960px) { .metabox-points { grid-template-columns: 1fr; } }
+
+    /* About */
+    .about-card {
+      background: linear-gradient(160deg, rgba(139, 92, 246, 0.10), rgba(34, 211, 238, 0.05)), var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+    }
+    .about-content {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      align-items: center;
+      gap: 2rem;
+    }
+    .about-photo {
+      display: block;
+      width: 100%;
+      max-width: 190px;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+    }
+    .about-text p:last-child { margin-bottom: 0; }
+    @media (max-width: 640px) {
+      .about-card { padding: 1.25rem; }
+      .about-content { grid-template-columns: 1fr; gap: 1.25rem; }
+      .about-photo { width: min(190px, 70%); margin: 0 auto; }
+    }
+
+    /* Steps */
+    .step {
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 1.6rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .step:hover { transform: translateY(-4px); border-color: var(--border); }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      box-shadow: 0 0 18px var(--glow);
+      margin-bottom: 0.9rem;
+    }
+    .step p { margin-bottom: 0; font-size: 0.95rem; }
+
+    /* Presentation */
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+      box-shadow: 0 0 50px rgba(139, 92, 246, 0.18);
+    }
+    .video-wrap iframe,
+    .video-wrap video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .video-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 0 0 1rem;
+    }
+    .video-option {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.15rem;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .video-option:hover { transform: translateY(-1px); border-color: var(--accent-3); }
+    .video-option[aria-pressed="true"] {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.28), rgba(34, 211, 238, 0.15));
+      border-color: var(--accent-3);
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.09);
+    }
+    .video-help { font-size: 0.92rem; margin: 0 0 1.1rem; }
+    .video-direct-links { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+    @media (max-width: 640px) {
+      .video-options { display: grid; grid-template-columns: 1fr 1fr; }
+      .video-option { padding: 0.7rem 0.6rem; font-size: 0.92rem; }
+    }
+    .video-link {
+      position: absolute;
+      inset: 0;
+      display: block;
+      text-decoration: none;
+      color: #fff;
+    }
+    .video-link img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.75;
+      transition: opacity 0.25s, transform 0.4s;
+    }
+    .video-link:hover img {
+      opacity: 0.9;
+      transform: scale(1.03);
+    }
+    .video-link::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7,7,13,0.15), rgba(7,7,13,0.65));
+    }
+    .video-link .play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 1.6rem;
+      box-shadow: 0 0 40px var(--glow);
+      z-index: 2;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .video-link:hover .play {
+      transform: translate(-50%, -50%) scale(1.08);
+      box-shadow: 0 0 60px var(--glow);
+    }
+    .video-link .video-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 1.25rem;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1rem;
+      z-index: 2;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    }
+    .video-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      text-align: center;
+      padding: 1.5rem;
+      background:
+        radial-gradient(circle at 50% 40%, rgba(139, 92, 246, 0.25), transparent 60%),
+        var(--bg-soft);
+      color: var(--muted);
+    }
+    .video-placeholder .play {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-size: 1.4rem;
+      box-shadow: 0 0 30px var(--glow);
+    }
+
+    /* Contacts */
+    .contact-card {
+      background: linear-gradient(160deg, rgba(99, 102, 241, 0.12), rgba(34, 211, 238, 0.06)), var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.25rem;
+      text-align: center;
+    }
+    .contact-card p { max-width: 520px; margin: 0 auto 1.5rem; }
+    .contact-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      justify-content: center;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border-soft);
+      margin-top: 3rem;
+    }
+
+    /* Светлая тема при прокрутке */
+    body.light-mode {
+      color: #111827;
+    }
+    body.light-mode header {
+      background: rgba(255, 255, 255, 0.8);
+      border-bottom-color: rgba(17, 24, 39, 0.08);
+    }
+    body.light-mode .logo { color: #111827; }
+    body.light-mode header nav a { color: #4b5563; }
+    body.light-mode header nav a:hover {
+      color: #111827;
+      background: rgba(139, 92, 246, 0.12);
+    }
+    body.light-mode p { color: #4b5563; }
+    body.light-mode .card,
+    body.light-mode .step {
+      background: #ffffff;
+      border-color: rgba(17, 24, 39, 0.08);
+      box-shadow: 0 6px 20px rgba(17, 24, 39, 0.06);
+    }
+    body.light-mode .card:hover,
+    body.light-mode .step:hover {
+      background: #ffffff;
+      border-color: rgba(139, 92, 246, 0.35);
+      box-shadow: 0 12px 32px rgba(17, 24, 39, 0.10), 0 0 24px rgba(139, 92, 246, 0.10);
+    }
+    body.light-mode .about-card,
+    body.light-mode .contact-card {
+      background: linear-gradient(160deg, rgba(139, 92, 246, 0.08), rgba(34, 211, 238, 0.05)), #ffffff;
+      border-color: rgba(139, 92, 246, 0.25);
+    }
+    body.light-mode .btn-secondary {
+      color: #111827;
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+    body.light-mode .btn-secondary:hover {
+      background: rgba(139, 92, 246, 0.12);
+      color: #111827;
+    }
+    body.light-mode footer {
+      color: #6b7280;
+      border-top-color: rgba(17, 24, 39, 0.08);
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .hero { grid-template-columns: 1fr; gap: 2rem; padding-top: 3.5rem; }
+      .hero-visual { max-width: 420px; margin: 0 auto; width: 100%; }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      header { padding: 0.9rem 1rem; }
+      header nav a { padding: 0.35rem 0.55rem; font-size: 0.9rem; }
+      main { padding: 0 1rem 3rem; }
+      section { padding-top: 3rem; }
+      .grid-4, .grid-3 { grid-template-columns: 1fr; }
+      .hero-actions .btn { width: 100%; }
+      .contact-actions .btn { width: 100%; }
+      .about-card, .contact-card { padding: 1.5rem; }
+    }
+  
+
+    /* Revision: stronger contrast and better mobile navigation */
+    section[id] { scroll-margin-top: 118px; }
+    .feature-card { min-height: 100%; }
+    .feature-card h3 { line-height: 1.35; }
+    .feature-card p { line-height: 1.7; }
+    .insight-card h3 { line-height: 1.35; }
+    .insight-card p { line-height: 1.68; }
+    .insight-card .source-link { line-height: 1.45; }
+
+    .metabox-panel {
+      color: #172033;
+      background: linear-gradient(135deg, #f0edff 0%, #e5f7fb 100%);
+      border: 1px solid rgba(139, 92, 246, 0.24);
+      box-shadow: 0 18px 50px rgba(25, 36, 66, 0.08);
+    }
+    .metabox-panel .eyebrow { color: #087f9e; }
+    .metabox-panel h2 { color: #161d30; max-width: 900px; }
+    .metabox-panel > p,
+    body.light-mode .metabox-panel > p { color: #4b5568; }
+    .metabox-point,
+    body.light-mode .metabox-point {
+      color: #192033;
+      background: rgba(255, 255, 255, 0.88);
+      border-color: rgba(76, 85, 112, 0.14);
+    }
+    .metabox-point h3 { color: #192033; }
+    .metabox-point p,
+    body.light-mode .metabox-point p { color: #4b5568; }
+    .metabox-panel .disclaimer,
+    body.light-mode .metabox-panel .disclaimer { color: #515b70; }
+    .metabox-panel .btn-secondary,
+    body.light-mode .metabox-panel .btn-secondary {
+      color: #382276;
+      border-color: rgba(99, 72, 170, 0.48);
+    }
+    .metabox-panel .btn-secondary:hover,
+    body.light-mode .metabox-panel .btn-secondary:hover {
+      color: #28145b;
+      background: rgba(139, 92, 246, 0.10);
+    }
+
+    @media (max-width: 640px) {
+      body { font-size: 15px; }
+      header { align-items: flex-start; gap: 0.65rem; }
+      h1 { font-size: clamp(1.9rem, 8vw, 2.5rem); }
+      .lead { font-size: 1rem; }
+      .hero-actions { gap: 0.65rem; }
+      .hero-actions .btn,
+      .contact-actions .btn,
+      .video-direct-links .btn { width: 100%; }
+      .video-option { min-height: 46px; padding: 0.7rem 0.45rem; }
+      .logo { font-size: 1rem; }
+      header nav {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.3rem;
+      }
+      header nav a {
+        min-width: 0;
+        text-align: center;
+        padding: 0.48rem 0.3rem;
+        font-size: 0.83rem;
+        background: rgba(139, 92, 246, 0.06);
+      }
+      .hero { padding-top: 2.4rem; }
+      .hero-visual { aspect-ratio: 1.08 / 1; }
+      .metabox-panel { padding: 1.25rem; border-radius: 18px; }
+      .metabox-panel h2 { font-size: clamp(1.45rem, 7vw, 1.9rem); }
+      .metabox-points { grid-template-columns: 1fr; gap: 0.75rem; }
+      .metabox-point { padding: 1rem; }
+      .feature-card, .insight-card, .step { padding: 1.25rem; }
+      .stat-number { font-size: 2.25rem; }
+      .video-wrap { border-radius: 14px; }
+      .video-direct-links .btn { width: 100%; }
+      .video-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .source-link { overflow-wrap: anywhere; }
+      .section-head { margin-bottom: 1.35rem; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="#home">
+      <span class="logo-mark">AI</span>
+      Konstantin AI
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="#features">Возможности ИИ</a>
+      <a href="#insights">Факты и риски</a>
+      <a href="#presentation">Презентация</a>
+      <a href="#about">Обо мне</a>
+      <a href="#contact">Контакты</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div>
+        <span class="eyebrow">Практический взгляд на ИИ</span>
+        <h1>Нейросети — это больше, чем просто <span class="grad">ChatGPT</span></h1>
+        <p class="lead">Искусственный интеллект меняет привычные задачи и требования к навыкам. Разберись, что уже можно делать с нейросетями, и почему откладывать знакомство с ними становится всё рискованнее.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#presentation">Смотреть презентацию</a>
+          <a class="btn btn-secondary" href="#contact">Связаться со мной</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+      </div>
+    </section>
+<section id="features">
+      <div class="section-head">
+        <span class="eyebrow">Возможности нейросетей</span>
+        <h2>Что ИИ может сделать для тебя уже сегодня</h2>
+        <p class="lead">Не нужно быть программистом. Начни с понятной задачи — ИИ поможет подготовить черновик, увидеть варианты и быстрее перейти к делу. Важный результат всегда проверяй.</p>
+      </div>
+      <div class="grid grid-4 feature-grid">
+        <article class="card feature-card">
+          <div class="card-icon" aria-hidden="true">✦</div>
+          <h3>От идеи — к готовому контенту</h3>
+          <p>Посты, сценарии коротких видео, описания товаров и идеи для публикаций. Опиши цель и аудиторию — получи варианты и доработай тот, который подходит именно тебе.</p>
+        </article>
+        <article class="card feature-card">
+          <div class="card-icon" aria-hidden="true">◈</div>
+          <h3>Разобраться в сложном быстрее</h3>
+          <p>Попроси объяснить незнакомую тему простыми словами, кратко изложить длинный текст или сравнить несколько вариантов. Ссылки и важные факты сверяй с первоисточниками.</p>
+        </article>
+        <article class="card feature-card">
+          <div class="card-icon" aria-hidden="true">⚙</div>
+          <h3>Снять часть рутины</h3>
+          <p>Черновики писем, планы, списки задач, инструкции и ответы клиентам. ИИ готовит основу, а ты экономишь время на повторяющихся шагах и контролируешь итог.</p>
+        </article>
+        <article class="card feature-card">
+          <div class="card-icon" aria-hidden="true">↗</div>
+          <h3>Создать помощника под задачу</h3>
+          <p>Настрой повторяемый сценарий для обучения, контент-плана, анализа обращений или подготовки документов. Возможности зависят от конкретного сервиса и тарифа.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="insights">
+      <div class="section-head">
+        <span class="eyebrow">Факты и риски</span>
+        <h2>ИИ уже меняет правила игры. Готов ли ты?</h2>
+        <p class="lead">Три факта показывают скорость изменений. Ещё три карточки — о рисках, которые легко недооценить, пока кажется, что можно отложить знакомство с нейросетями на потом.</p>
+      </div>
+      <div class="grid grid-3 insight-grid">
+        <article class="card insight-card">
+          <span class="insight-tag">Факт · Бизнес</span>
+          <span class="stat-number">88%</span>
+          <h3>опрошенных организаций уже используют ИИ</h3>
+          <p>В исследовании за 2025 год 88% респондентов сообщили, что их организация применяет ИИ хотя бы в одной бизнес-функции. Это результат опроса организаций, а не утверждение о каждом бизнесе в мире.</p>
+          <a class="source-link" href="https://hai.stanford.edu/ai-index/2026-ai-index-report/economy" target="_blank" rel="noopener noreferrer">Источник: Stanford HAI, AI Index 2026 ↗</a>
+        </article>
+        <article class="card insight-card">
+          <span class="insight-tag">Факт · Скорость внедрения</span>
+          <span class="stat-number">53%</span>
+          <h3>уровня распространения генеративный ИИ достиг всего за три года</h3>
+          <p>По данным Stanford HAI, генеративный ИИ достиг 53% уровня внедрения всего за три года — быстрее, чем персональные компьютеры и интернет на сопоставимом этапе. Темпы заметно отличаются между странами.</p>
+          <a class="source-link" href="https://hai.stanford.edu/ai-index/2026-ai-index-report/economy" target="_blank" rel="noopener noreferrer">Источник: Stanford HAI, AI Index 2026 ↗</a>
+        </article>
+        <article class="card insight-card">
+          <span class="insight-tag">Факт · Возможности и пределы</span>
+          <span class="stat-number">66,3%</span>
+          <h3>точность ИИ-агентов в тесте компьютерных задач</h3>
+          <p>В тесте OSWorld показатель вырос примерно с 12% до 66,3%. Прогресс заметный, но примерно одна попытка из трёх всё ещё заканчивается неудачей. Это результат конкретного теста, а не гарантия выполнения любой задачи.</p>
+          <a class="source-link" href="https://hai.stanford.edu/ai-index/2026-ai-index-report/technical-performance" target="_blank" rel="noopener noreferrer">Источник: Stanford HAI, Technical Performance ↗</a>
+        </article>
+        <article class="card insight-card concern-card">
+          <span class="insight-tag">Риск 01 · Автоматизация</span>
+          <h3>Если ты работаешь только по инструкции, твои задачи проще автоматизировать</h3>
+          <p>Повторяющиеся действия — обработка текста, типовые ответы, сводки и поиск информации — всё чаще можно частично автоматизировать. Это не значит, что профессии исчезнут завтра. Но если работа состоит почти только из выполнения алгоритма, важно понять, какие её части уже умеет делать ИИ.</p>
+        </article>
+        <article class="card insight-card concern-card">
+          <span class="insight-tag">Риск 02 · Конкуренция</span>
+          <h3>Твой конкурент — человек, который уже освоил ИИ</h3>
+          <p>Один специалист с хорошими AI-навыками может быстрее подготовить черновик, сравнить варианты, собрать информацию и автоматизировать рутину. Опыт по-прежнему важен, но привычка делать всё вручную может стать слабым местом. Вопрос не в панике, а в том, чтобы не уступать преимущество добровольно.</p>
+          <a class="source-link" href="https://hai.stanford.edu/ai-index/2026-ai-index-report/economy" target="_blank" rel="noopener noreferrer">Данные о внедрении ИИ в работу: Stanford HAI ↗</a>
+        </article>
+        <article class="card insight-card concern-card">
+          <span class="insight-tag">Риск 03 · Цена ожидания</span>
+          <h3>Самый большой риск — продолжать ждать</h3>
+          <p>Можно месяцами читать новости, сохранять полезные сервисы и думать «потом разберусь» — и так ни разу не применить ИИ на практике. Пока ты ждёшь идеального момента, другие уже пробуют инструменты и набирают опыт. Не нужно сразу менять профессию или покупать курс: начни с одной небольшой задачи. Ошибиться в первой попытке — нормально. Годами так и не попробовать — значит добровольно отдать другим время на освоение нового навыка.</p>
+        </article>
+      </div>
+      <p class="source-note">Источники статистики: Stanford HAI, <a href="https://hai.stanford.edu/ai-index/2026-ai-index-report" target="_blank" rel="noopener noreferrer">AI Index 2026</a>. Показатели основаны на разных исследованиях и тестах. Карточки о рисках отражают возможные последствия автоматизации, а не прогноз неизбежного исчезновения конкретных профессий.</p>
+    </section>
+
+<section id="presentation">
+      <div class="section-head">
+        <span class="eyebrow">Видеопрезентация</span>
+        <h2>От практического ИИ — к знакомству с проектом MetaBox</h2>
+        <p>За 20–30 минут Никита Брецкий рассказывает о MetaBox, его ИИ-инструментах, обучении и партнёрской модели — посмотри, чтобы понять предложение и затем самостоятельно оценить условия участия.</p>
+      </div>
+      <div class="video-options" role="group" aria-label="Выбор видеоплатформы">
+        <button class="video-option" type="button" data-video="vk" aria-pressed="true">▶ VK Видео</button>
+        <button class="video-option" type="button" data-video="youtube" aria-pressed="false">▶ YouTube</button>
+      </div>
+      <p class="video-help" id="video-help" aria-live="polite">Сейчас выбрано VK Видео. Если плеер не загрузился, открой ролик напрямую по ссылке ниже.</p>
+      <div class="video-wrap">
+        <iframe
+          id="presentation-player"
+          src="https://vkvideo.ru/video_ext.php?oid=-242574376&amp;id=456239017&amp;hash=d74e1c21c5dc87b3&amp;hd=4"
+          title="Презентация MetaBox — VK Видео"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
+          frameborder="0"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+      </div>
+      <div class="video-direct-links">
+        <a class="btn btn-secondary" id="open-video-direct" href="https://vkvideo.ru/video-242574376_456239017" target="_blank" rel="noopener noreferrer">Открыть видео в VK Видео ↗</a>
+      </div>
+    </section>
+
+
+    <section id="about">
+      <div class="section-head">
+        <span class="eyebrow">Обо мне</span>
+        <h2>Константин: технологии должны решать реальные задачи</h2>
+      </div>
+      <div class="about-card">
+        <div class="about-content">
+          <img class="about-photo" src="konstantin.jpg" alt="Константин" loading="lazy" width="190" height="253">
+          <div class="about-text">
+            <p>Меня зовут Константин. По работе я занимаюсь сопровождением ИТ-систем и процессов, поэтому мне близка идея использовать технологии не ради модного эффекта, а чтобы решать конкретные задачи проще и эффективнее.</p>
+            <p>Сейчас я изучаю и пробую инструменты искусственного интеллекта: ищу, где они помогают создавать материалы, разбираться в информации и сокращать рутинные действия. Возможности и результат всегда важно проверять на практике.</p>
+            <p>Я создал эту страницу, чтобы понятным языком рассказывать о практическом применении ИИ и знакомить людей с проектом MetaBox, который сам изучаю. Не позиционирую себя гуру и не обещаю лёгких денег. Мне важно, чтобы у человека была возможность разобраться в сути, задать вопросы и принять собственное решение.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="contact-card">
+        <span class="eyebrow">Контакты</span>
+        <h2>Обсудим ИИ или партнёрскую модель?</h2>
+        <p>Если после презентации тебя заинтересовали инструменты ИИ или партнёрская модель MetaBox, напиши мне в Telegram. Обсудим твои вопросы и то, что стоит проверить перед решением. Я не обещаю гарантированного дохода — сначала важно разобраться в продукте и актуальных условиях.</p>
+        <div class="contact-actions">
+          <a class="btn btn-primary" href="https://t.me/konstantin_vegan" target="_blank" rel="noopener noreferrer" aria-label="Написать Константину в Telegram">Написать в Telegram ↗</a>
+          <a class="btn btn-secondary" href="#presentation">Вернуться к презентации</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> Konstantin AI. Информационная страница.
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Переключение встроенной презентации между VK Видео и YouTube.
+    (function () {
+      const player = document.getElementById('presentation-player');
+      const help = document.getElementById('video-help');
+      const directLink = document.getElementById('open-video-direct');
+      const buttons = document.querySelectorAll('[data-video]');
+      const sources = {
+        vk: {
+          src: 'https://vkvideo.ru/video_ext.php?oid=-242574376&id=456239017&hash=d74e1c21c5dc87b3&hd=4',
+          title: 'Презентация MetaBox — VK Видео',
+          help: 'Сейчас выбрано VK Видео. Если плеер не загрузился, открой ролик напрямую по ссылке ниже.',
+          link: 'https://vkvideo.ru/video-242574376_456239017',
+          linkText: 'Открыть видео в VK Видео ↗'
+        },
+        youtube: {
+          src: 'https://www.youtube.com/embed/8gYpochuoYM?si=YMJI99D-CiIbNJF4',
+          title: 'Презентация MetaBox — YouTube',
+          help: 'Сейчас выбран YouTube. Если сервис недоступен в твоём регионе или сети, переключись на VK Видео.',
+          link: 'https://youtu.be/8gYpochuoYM',
+          linkText: 'Открыть видео на YouTube ↗'
+        }
+      };
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          const key = button.dataset.video;
+          const source = sources[key];
+          if (!source) return;
+          player.src = source.src;
+          player.title = source.title;
+          help.textContent = source.help;
+          directLink.href = source.link;
+          directLink.textContent = source.linkText;
+          buttons.forEach(function (item) {
+            item.setAttribute('aria-pressed', String(item === button));
+          });
+        });
+      });
+    })();
+
+    // Плавный переход фона с тёмного на светлый при прокрутке
+    (function () {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:-1;pointer-events:none;background:#f7f7fb;opacity:0;transition:opacity 0.15s linear;';
+      document.body.appendChild(overlay);
+
+      const maxScroll = 600; // px, за которые происходит полный переход
+
+      function update() {
+        const progress = Math.min(window.scrollY / maxScroll, 1);
+        overlay.style.opacity = progress;
+        document.body.classList.toggle('light-mode', progress > 0.5);
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+  </script>
+</body>
+</html>
