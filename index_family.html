@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8fc">
+  <meta name="description" content="Практические идеи о том, как использовать нейросети в семье, обучении и работе. Простым языком и без обещаний волшебных результатов.">
+  <title>ИИ для семьи — новые возможности для жизни и работы</title>
+  <style>
+    :root {
+      --bg: #f7f8fc;
+      --surface: #ffffff;
+      --surface-soft: #eef5ff;
+      --text: #1d2940;
+      --muted: #5d687c;
+      --primary: #4263c7;
+      --primary-dark: #304ba2;
+      --mint: #dff5ed;
+      --peach: #fff0e4;
+      --lavender: #eee9ff;
+      --border: #e2e7f0;
+      --shadow: 0 18px 50px rgba(39, 57, 94, .08);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65; color: var(--text); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); }
+    header {
+      position: sticky; top: 0; z-index: 20; display: flex; align-items: center;
+      justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+      padding: .85rem max(1.25rem, calc((100vw - 1120px) / 2));
+      background: rgba(255,255,255,.88); backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(226,231,240,.9);
+    }
+    .logo { display: inline-flex; align-items: center; gap: .65rem; color: var(--text); text-decoration: none; font-weight: 800; }
+    .logo-mark {
+      display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px;
+      color: white; background: linear-gradient(135deg, #5579df, #6bbaa6); font-size: .85rem;
+      box-shadow: 0 7px 18px rgba(66,99,199,.2);
+    }
+    nav { display: flex; flex-wrap: wrap; gap: .2rem; }
+    nav a { color: var(--muted); text-decoration: none; font-size: .91rem; padding: .45rem .65rem; border-radius: 9px; }
+    nav a:hover { color: var(--primary-dark); background: var(--surface-soft); }
+    main { width: min(1120px, calc(100% - 2.5rem)); margin: 0 auto; padding-bottom: 4rem; }
+    section { padding-top: 5rem; }
+    .hero {
+      display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 3rem;
+      padding-top: 4.5rem;
+    }
+    .eyebrow { display: inline-block; color: var(--primary); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; margin-bottom: .8rem; }
+    h1 { font-size: clamp(2.3rem, 5vw, 4.1rem); line-height: 1.08; letter-spacing: -.045em; margin-bottom: 1.25rem; }
+    h1 span { color: var(--primary); }
+    h2 { font-size: clamp(1.7rem, 3vw, 2.45rem); line-height: 1.2; letter-spacing: -.025em; margin-bottom: .7rem; }
+    h3 { font-size: 1.12rem; line-height: 1.35; margin-bottom: .55rem; }
+    p { color: var(--muted); margin-bottom: 1rem; }
+    .lead { font-size: 1.12rem; max-width: 650px; }
+    .hero-actions, .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.6rem; }
+    .btn {
+      display: inline-flex; justify-content: center; align-items: center; gap: .5rem;
+      padding: .85rem 1.25rem; border-radius: 13px; text-decoration: none; font-weight: 750;
+      border: 1px solid transparent; transition: transform .18s, box-shadow .18s, background .18s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 9px 22px rgba(66,99,199,.2); }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: white; color: var(--primary-dark); border-color: #d7def0; }
+    .btn-secondary:hover { background: var(--surface-soft); }
+    .hero-art {
+      min-height: 370px; position: relative; overflow: hidden; display: grid; place-items: center;
+      border-radius: 32px; background: linear-gradient(145deg, #e8efff, #e5f6f0 60%, #fff0e5);
+      border: 1px solid #e4e9f3;
+    }
+    .hero-art::before, .hero-art::after { content: ""; position: absolute; border-radius: 50%; }
+    .hero-art::before { width: 260px; height: 260px; background: rgba(255,255,255,.55); top: -70px; right: -45px; }
+    .hero-art::after { width: 190px; height: 190px; background: rgba(255,255,255,.45); bottom: -70px; left: -30px; }
+    .family-illustration { position: relative; z-index: 1; width: min(88%, 390px); }
+    .floating-note {
+      position: absolute; z-index: 2; padding: .75rem .95rem; background: rgba(255,255,255,.9);
+      border: 1px solid rgba(255,255,255,.9); border-radius: 15px; box-shadow: var(--shadow);
+      font-weight: 750; font-size: .9rem; color: #33415e;
+    }
+    .note-one { top: 12%; left: 6%; }
+    .note-two { right: 5%; bottom: 14%; }
+    .section-head { max-width: 760px; margin-bottom: 1.7rem; }
+    .grid { display: grid; gap: 1.1rem; }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      padding: 1.5rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; box-shadow: 0 8px 28px rgba(39,57,94,.035);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .card p { font-size: .96rem; margin-bottom: 0; }
+    .icon {
+      display: grid; place-items: center; width: 46px; height: 46px; border-radius: 15px;
+      font-size: 1.35rem; margin-bottom: 1rem;
+    }
+    .blue { background: #e8eeff; } .green { background: var(--mint); } .peach { background: var(--peach); } .purple { background: var(--lavender); }
+    .callout {
+      margin-top: 1.25rem; padding: 1.1rem 1.25rem; background: #edf7f3;
+      border: 1px solid #d8eee5; border-radius: 16px; color: #345b50;
+    }
+    .callout strong { color: #234b40; }
+    .steps { counter-reset: step; }
+    .step { position: relative; padding: 1.45rem 1.4rem 1.4rem 4.2rem; background: white; border: 1px solid var(--border); border-radius: 18px; }
+    .step::before {
+      counter-increment: step; content: counter(step); position: absolute; top: 1.35rem; left: 1.25rem;
+      display: grid; place-items: center; width: 2.1rem; height: 2.1rem; border-radius: 11px;
+      color: white; background: var(--primary); font-weight: 800;
+    }
+    .step p { margin: 0; font-size: .95rem; }
+    .presentation {
+      padding: clamp(1.4rem, 4vw, 2.5rem); border-radius: 28px;
+      background: linear-gradient(135deg, #edf0ff, #e8f7f2); border: 1px solid #dfe6f3;
+    }
+    .presentation p { max-width: 820px; }
+    .video-options { display: flex; flex-wrap: wrap; gap: .65rem; margin: 1.25rem 0 .8rem; }
+    .video-option {
+      padding: .7rem 1.05rem; border-radius: 999px; border: 1px solid #d4dcef; background: white;
+      color: var(--text); font: inherit; font-weight: 750; cursor: pointer;
+    }
+    .video-option[aria-pressed="true"] { background: var(--primary); color: white; border-color: var(--primary); }
+    .video-help { font-size: .93rem; }
+    .video-wrap { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 18px; background: #182035; box-shadow: var(--shadow); }
+    .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .about-card { display: grid; grid-template-columns: 190px 1fr; gap: 2rem; align-items: center; padding: 1.6rem; background: white; border: 1px solid var(--border); border-radius: 24px; }
+    .about-photo { display: block; width: 100%; max-width: 190px; aspect-ratio: 3 / 4; object-fit: cover; object-position: center; border-radius: 17px; }
+    .about-text p:last-child { margin-bottom: 0; }
+    .faq details { background: white; border: 1px solid var(--border); border-radius: 15px; padding: 1rem 1.2rem; }
+    .faq details + details { margin-top: .7rem; }
+    .faq summary { cursor: pointer; font-weight: 750; }
+    .faq details p { margin: .8rem 0 0; }
+    .contact-card { text-align: center; padding: clamp(1.5rem, 5vw, 3rem); border-radius: 28px; background: #eaf0ff; border: 1px solid #dce5fc; }
+    .contact-card p { max-width: 680px; margin: 0 auto 1.25rem; }
+    .contact-card .actions { justify-content: center; }
+    footer { text-align: center; padding: 2rem 1rem; color: #788196; font-size: .9rem; border-top: 1px solid var(--border); }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 1.8rem; padding-top: 3rem; }
+      .hero-art { min-height: 320px; }
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      header { padding: .8rem 1rem; }
+      header nav { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+      nav a { text-align: center; background: #f4f6fb; font-size: .85rem; }
+      main { width: min(100% - 2rem, 1120px); }
+      section { padding-top: 3.4rem; }
+      .hero { padding-top: 2.5rem; }
+      h1 { font-size: clamp(2.2rem, 10vw, 3rem); }
+      .lead { font-size: 1rem; }
+      .hero-actions .btn, .contact-card .btn { width: 100%; }
+      .hero-art { min-height: 270px; border-radius: 23px; }
+      .floating-note { font-size: .78rem; padding: .6rem .7rem; }
+      .grid-4, .grid-3 { grid-template-columns: 1fr; }
+      .card { padding: 1.25rem; }
+      .about-card { grid-template-columns: 1fr; gap: 1.2rem; padding: 1.25rem; }
+      .about-photo { margin: 0 auto; width: min(190px, 70%); }
+      .step { padding-left: 3.8rem; }
+      .video-option { flex: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="#home" aria-label="На главную">
+      <span class="logo-mark">ИИ</span>
+      <span>ИИ для семьи</span>
+    </a>
+    <nav aria-label="Основная навигация">
+      <a href="#family">Для семьи</a>
+      <a href="#learning">Учёба и развитие</a>
+      <a href="#presentation">Презентация</a>
+      <a href="#about">Обо мне</a>
+      <a href="#contact">Контакты</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div>
+        <span class="eyebrow">Нейросети простыми словами</span>
+        <h1>Новые возможности начинаются с <span>понимания</span></h1>
+        <p class="lead">Разбираемся, как использовать искусственный интеллект в семейной жизни, учёбе и работе — без сложных терминов, громких обещаний и необходимости быть специалистом.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#family">Посмотреть примеры</a>
+          <a class="btn btn-secondary" href="#presentation">Открыть презентацию</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-label="Иллюстрация цифровых возможностей для семьи">
+        <span class="floating-note note-one">💡 Идеи для каждого дня</span>
+        <span class="floating-note note-two">📚 Учиться вместе</span>
+        <svg class="family-illustration" viewBox="0 0 420 340" role="img" aria-label="Стилизованная иллюстрация семьи и технологий">
+          <ellipse cx="210" cy="306" rx="160" ry="18" fill="#c9d8e9" opacity=".55"/>
+          <rect x="70" y="155" width="280" height="140" rx="28" fill="#fff" opacity=".9"/>
+          <rect x="94" y="176" width="232" height="99" rx="13" fill="#e8efff"/>
+          <rect x="111" y="191" width="198" height="69" rx="9" fill="#d4e2f6"/>
+          <circle cx="160" cy="115" r="39" fill="#e7ad83"/>
+          <path d="M122 113 Q119 64 163 68 Q204 70 199 112 L187 97 Q166 105 143 91 L129 112Z" fill="#514039"/>
+          <path d="M111 205 Q111 156 160 156 Q207 156 210 205 L210 260 L111 260Z" fill="#5273c9"/>
+          <circle cx="258" cy="127" r="32" fill="#f0c39c"/>
+          <path d="M226 124 Q222 84 259 88 Q291 88 290 125 L280 110 Q256 117 236 104Z" fill="#6c5547"/>
+          <path d="M218 207 Q220 169 258 169 Q298 169 300 207 L300 260 L218 260Z" fill="#72b7a1"/>
+          <circle cx="218" cy="199" r="26" fill="#d99b70"/>
+          <path d="M192 199 Q193 169 219 171 Q245 172 244 199 L236 188 Q217 195 202 185Z" fill="#59433b"/>
+          <path d="M177 260 Q178 224 218 224 Q257 224 258 260Z" fill="#f0b36f"/>
+          <rect x="178" y="277" width="64" height="7" rx="3.5" fill="#b5c7e4"/>
+          <path d="M332 58 l8 18 18 8 -18 8 -8 18 -8 -18 -18 -8 18 -8z" fill="#f1bd71"/>
+          <circle cx="85" cy="75" r="9" fill="#83cbb5"/>
+          <circle cx="340" cy="143" r="7" fill="#9baeea"/>
+        </svg>
+      </div>
+    </section>
+
+    <section id="family">
+      <div class="section-head">
+        <span class="eyebrow">Практика на каждый день</span>
+        <h2>Чем нейросети могут помочь семье</h2>
+        <p class="lead">Не обязательно начинать со сложных сервисов. Часто достаточно описать свою задачу обычными словами и проверить предложенный результат.</p>
+      </div>
+      <div class="grid grid-4">
+        <article class="card">
+          <div class="icon blue" aria-hidden="true">🗓️</div>
+          <h3>Семейные планы</h3>
+          <p>Составить меню на неделю, придумать список покупок, подготовить план выходного или распределить домашние дела.</p>
+        </article>
+        <article class="card">
+          <div class="icon green" aria-hidden="true">🧩</div>
+          <h3>Идеи для детей</h3>
+          <p>Найти идеи для творчества, игр без гаджетов, семейных занятий и объяснений сложных тем на понятных примерах.</p>
+        </article>
+        <article class="card">
+          <div class="icon peach" aria-hidden="true">✍️</div>
+          <h3>Тексты и документы</h3>
+          <p>Подготовить черновик письма, структурировать информацию, составить список вопросов или кратко пересказать длинный текст.</p>
+        </article>
+        <article class="card">
+          <div class="icon purple" aria-hidden="true">🌱</div>
+          <h3>Личное развитие</h3>
+          <p>Разобраться в новой теме, составить план обучения, потренироваться перед разговором или найти идеи для нового проекта.</p>
+        </article>
+      </div>
+      <div class="callout"><strong>Важное правило:</strong> нейросеть может ошибаться. Проверяйте факты, не передавайте ей пароли, банковские данные и лишнюю личную информацию, а детям помогайте оценивать ответы критически.</div>
+    </section>
+
+    <section id="learning">
+      <div class="section-head">
+        <span class="eyebrow">Учёба и развитие</span>
+        <h2>Как начать без перегруза</h2>
+        <p class="lead">Для первого опыта не нужен большой курс или десяток приложений. Попробуйте решить одну реальную задачу и посмотрите, что получилось.</p>
+      </div>
+      <div class="grid grid-3 steps">
+        <article class="step">
+          <h3>Выберите одну задачу</h3>
+          <p>Например, попросите объяснить школьную тему простым языком или придумать пять идей для семейного выходного.</p>
+        </article>
+        <article class="step">
+          <h3>Уточните условия</h3>
+          <p>Напишите возраст ребёнка, нужный уровень сложности, ограничения по времени или формат ответа — но не сообщайте лишние персональные данные.</p>
+        </article>
+        <article class="step">
+          <h3>Проверьте результат</h3>
+          <p>Сравните ответ с надёжными источниками и собственным опытом. Используйте ИИ как помощника, а не как окончательную инстанцию.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="presentation">
+      <div class="presentation">
+        <span class="eyebrow">Дополнительная информация</span>
+        <h2>Посмотрите, какие возможности открываются с ИИ</h2>
+        <p>Ниже — презентация проекта MetaBox. В ней рассказывается об ИИ-инструментах, обучении и партнёрской модели. Посмотрите материал, уточните актуальную стоимость, условия участия и правила возврата до принятия решения.</p>
+        <p>Участие в партнёрской программе не гарантирует доход. Перед оплатой важно самостоятельно оценить продукт, расходы, условия договора и то, насколько предложение подходит именно вам.</p>
+        <div class="video-options" role="group" aria-label="Выбор видеоплатформы">
+          <button class="video-option" type="button" data-video="vk" aria-pressed="true">▶ VK Видео</button>
+          <button class="video-option" type="button" data-video="youtube" aria-pressed="false">▶ YouTube</button>
+        </div>
+        <p class="video-help" id="video-help" aria-live="polite">Выбрано VK Видео. Если плеер не загрузился, откройте ролик напрямую по ссылке под видео.</p>
+        <div class="video-wrap">
+          <iframe id="presentation-player"
+            src="https://vkvideo.ru/video_ext.php?oid=-242574376&amp;id=456239019&amp;hash=63d76c7b64bd4c2f&amp;hd=3"
+            title="Презентация проекта — VK Видео"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
+            allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </div>
+        <div class="actions">
+          <a class="btn btn-secondary" id="open-video-direct" href="https://vkvideo.ru/video-242574376_456239019" target="_blank" rel="noopener noreferrer">Открыть видео в VK Видео ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-head">
+        <span class="eyebrow">Обо мне</span>
+        <h2>Технологии должны помогать в реальной жизни</h2>
+      </div>
+      <div class="about-card">
+        <img class="about-photo" src="konstantin.jpg" alt="Константин" loading="lazy" width="190" height="253">
+        <div class="about-text">
+          <p>Меня зовут Константин. По работе я занимаюсь сопровождением ИТ-систем и процессов. Мне близок практический подход: технология полезна тогда, когда помогает решать конкретную задачу.</p>
+          <p>Я изучаю инструменты искусственного интеллекта и делюсь тем, что может пригодиться в семье, обучении и работе. Здесь не нужно разбираться во всём сразу — можно начать с небольших шагов и постепенно находить подходящие способы применения.</p>
+          <p>Также я знакомлюсь с проектом MetaBox и его предложением. Я не обещаю лёгких денег и считаю важным, чтобы каждый мог задать вопросы, изучить условия и принять собственное решение.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="section-head">
+        <span class="eyebrow">Частые вопросы</span>
+        <h2>Что стоит знать перед началом</h2>
+      </div>
+      <details>
+        <summary>Нужно ли быть техническим специалистом?</summary>
+        <p>Нет. Начать можно с обычного вопроса на естественном языке. Полезно постепенно учиться точнее формулировать задачу и проверять ответы.</p>
+      </details>
+      <details>
+        <summary>Можно ли доверять ответам нейросети?</summary>
+        <p>Не всегда. Модель может ошибаться или уверенно выдавать неточную информацию. Проверяйте важные сведения, особенно связанные со здоровьем, безопасностью, финансами и обучением.</p>
+      </details>
+      <details>
+        <summary>Нужно ли покупать курс или подключаться к партнёрской программе?</summary>
+        <p>Нет, чтобы попробовать базовые сценарии ИИ. Условия платных продуктов и партнёрских программ нужно оценивать отдельно, до оплаты и без расчёта на гарантированный доход.</p>
+      </details>
+    </section>
+
+    <section id="contact">
+      <div class="contact-card">
+        <span class="eyebrow">Давайте обсудим</span>
+        <h2>Есть вопрос или хотите поделиться опытом?</h2>
+        <p>Напишите мне в Telegram. Можно обсудить практическое применение нейросетей для семьи, обучения и работы или задать вопросы о презентации проекта.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://t.me/konstantin_creator" target="_blank" rel="noopener noreferrer">Написать в Telegram ↗</a>
+          <a class="btn btn-secondary" href="#presentation">Вернуться к презентации</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> ИИ для семьи. Информационная страница.
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Переключение презентации между VK Видео и YouTube.
+    (function () {
+      const player = document.getElementById('presentation-player');
+      const help = document.getElementById('video-help');
+      const directLink = document.getElementById('open-video-direct');
+      const buttons = document.querySelectorAll('[data-video]');
+      const sources = {
+        vk: {
+          src: 'https://vkvideo.ru/video_ext.php?oid=-242574376&id=456239019&hash=63d76c7b64bd4c2f&hd=3',
+          title: 'Презентация проекта — VK Видео',
+          help: 'Выбрано VK Видео. Если плеер не загрузился, откройте ролик напрямую по ссылке под видео.',
+          link: 'https://vkvideo.ru/video-242574376_456239019',
+          linkText: 'Открыть видео в VK Видео ↗'
+        },
+        youtube: {
+          src: 'https://www.youtube.com/embed/Q3v-SSbOiB4?si=wUmZmh6xcmlqgmWD',
+          title: 'Презентация проекта — YouTube',
+          help: 'Выбран YouTube. Если сервис недоступен в вашей сети, переключитесь на VK Видео.',
+          link: 'https://youtu.be/Q3v-SSbOiB4',
+          linkText: 'Открыть видео на YouTube ↗'
+        }
+      };
+
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          const source = sources[button.dataset.video];
+          if (!source) return;
+          player.src = source.src;
+          player.title = source.title;
+          help.textContent = source.help;
+          directLink.href = source.link;
+          directLink.textContent = source.linkText;
+          buttons.forEach(function (item) {
+            item.setAttribute('aria-pressed', String(item === button));
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
